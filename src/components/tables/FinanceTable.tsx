@@ -11,6 +11,8 @@ import { FinanceTransaction } from "@/lib/finance/types";
 import { deleteTransaction } from "@/app/admin/finance/actions";
 import FinanceForm from "@/components/forms/FinanceForm";
 
+import { toast } from "sonner";
+
 interface FinanceTableProps {
   transactions: FinanceTransaction[];
   divisions: { id: number; name: string }[];
@@ -61,9 +63,10 @@ export default function FinanceTable({ transactions, divisions }: FinanceTablePr
       await deleteTransaction(txToDelete);
       setIsDeleteModalOpen(false);
       setTxToDelete(null);
+      toast.success("Transaksi berhasil dihapus");
     } catch (error) {
       console.error("Failed to delete", error);
-      alert("Gagal menghapus transaksi");
+      toast.error("Gagal menghapus transaksi");
     } finally {
       setIsDeleting(false);
     }

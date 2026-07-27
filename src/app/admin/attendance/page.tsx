@@ -87,16 +87,16 @@ export default async function AttendancePage(props: {
       const { data: profilesData } = await (await import('@/utils/supabase/admin'))
         .createAdminClient()
         .from('profiles')
-        .select('id, full_name, avatar_url, division_id')
+        .select('id, full_name, avatar_url, division_id, nim')
         .in('division_id', divisionIds);
 
       const profiles = profilesData ?? [];
-      const userIds = profiles.map((p: { id: string }) => p.id);
+      const userIds = profiles.map((p) => p.id);
       const attendanceStats = await getAttendanceStatsForUsers(userIds, eventIdFilter);
 
       groupedData = buildDivisionGroupedData(
         paginatedDivisions,
-        profiles as any,
+        profiles,
         attendanceStats,
         totalEventsToCount,
       );

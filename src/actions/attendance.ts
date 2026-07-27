@@ -14,7 +14,7 @@ const fetchAttendanceData = unstable_cache(
       { data: divisions }
     ] = await Promise.all([
       supabaseAdmin.from('attendance').select('*').eq('event_id', eventId),
-      supabaseAdmin.from('profiles').select('id, full_name, division_id'),
+      supabaseAdmin.from('profiles').select('id, full_name, division_id').not('division_id', 'is', null),
       supabaseAdmin.from('divisions').select('id, name')
     ]);
 

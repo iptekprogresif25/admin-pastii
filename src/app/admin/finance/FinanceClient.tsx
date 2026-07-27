@@ -1,14 +1,14 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Plus, Filter } from "lucide-react";
+import { Plus } from "lucide-react";
 import Button from "@/components/ui/button/Button";
 import Select from "@/components/form/Select";
 import { Modal } from "@/components/ui/modal";
 import { FinanceOverview } from "@/components/dashboard/FinanceOverview";
-import FinanceTable from "@/components/tables/FinanceTable";
 import FinanceForm from "@/components/forms/FinanceForm";
-import { FinanceTransaction } from "@/lib/finance/types";
+import FinanceTable from "@/components/tables/FinanceTable";
+import type { FinanceTransaction } from "@/lib/finance/types";
 
 interface FinanceClientProps {
   transactions: FinanceTransaction[];

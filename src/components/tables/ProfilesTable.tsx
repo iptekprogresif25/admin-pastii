@@ -17,20 +17,16 @@ import { Dropdown } from '@/components/ui/dropdown/Dropdown';
 import { DropdownItem } from '@/components/ui/dropdown/DropdownItem';
 import { Modal } from '@/components/ui/modal';
 import Button from '@/components/ui/button/Button';
+import { toast } from 'sonner';
 import { softDeleteProfile, toggleProfileStatus } from '@/app/admin/profiles/actions';
 import { Power, PowerOff } from 'lucide-react';
 
-interface Division {
-  id: number;
-  name: string;
-}
-
-interface Profile {
+export interface Profile {
   id: string;
-  full_name: string;
-  role: string;
+  full_name: string | null;
+  role: string | null;
   division_id: number | null;
-  division: Division | null;
+  division?: { name: string } | { name: string }[] | null;
   is_active: boolean;
 }
 
@@ -65,15 +61,24 @@ export default function ProfilesTable({
     else setOpenDropdownId(id);
   };
 
+  const getDivisionName = (profile: Profile): string => {
+    if (!profile.division) return 'Tidak ada divisi';
+    if (Array.isArray(profile.division)) {
+      return profile.division[0]?.name || 'Tidak ada divisi';
+    }
+    return profile.division.name || 'Tidak ada divisi';
+  };
+
   const handleDelete = async () => {
     if (!deleteModalProfile) return;
     setIsDeleting(true);
     const result = await softDeleteProfile(deleteModalProfile.id);
     setIsDeleting(false);
     if (result.success) {
+      toast.success(`Pengurus ${deleteModalProfile.full_name || ''} berhasil dihapus`);
       setDeleteModalProfile(null);
     } else {
-      alert('Gagal menghapus pengurus: ' + result.error);
+      toast.error('Gagal menghapus pengurus: ' + result.error);
     }
   };
 
@@ -83,9 +88,10 @@ export default function ProfilesTable({
     const result = await toggleProfileStatus(toggleModalProfile.id, toggleModalProfile.is_active);
     setIsToggling(false);
     if (result.success) {
+      toast.success(`Status pengurus ${toggleModalProfile.full_name || ''} berhasil diperbarui`);
       setToggleModalProfile(null);
     } else {
-      alert('Gagal mengubah status pengurus: ' + result.error);
+      toast.error('Gagal mengubah status pengurus: ' + result.error);
     }
   };
 
@@ -118,7 +124,7 @@ export default function ProfilesTable({
 
   const totalPages = Math.ceil(totalCount / itemsPerPage);
 
-  const getRoleBadgeColor = (role: string) => {
+  const getRoleBadgeColor = (role: string | null | undefined) => {
     const lowerRole = role?.toLowerCase() || '';
     if (lowerRole.includes('admin')) return 'error';
     if (lowerRole.includes('koordinator')) return 'warning';
@@ -197,7 +203,7 @@ export default function ProfilesTable({
                         </span>
                       </TableCell>
                       <TableCell className="px-4 py-3 text-start text-theme-sm dark:text-gray-400">
-                        {profile.division?.name || 'Tidak ada divisi'}
+                        {getDivisionName(profile)}
                       </TableCell>
                       <TableCell className="px-4 py-3 text-start text-theme-sm dark:text-gray-400">
                         <Badge

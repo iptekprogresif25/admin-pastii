@@ -32,6 +32,7 @@ export default function SignInForm() {
                 
                 <div>
                   <Button
+                    type="submit"
                     variant="outline"
                     className="w-full flex items-center justify-center gap-3"
                     size="sm"

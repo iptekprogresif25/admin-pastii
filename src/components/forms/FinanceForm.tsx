@@ -7,6 +7,8 @@ import Label from "@/components/form/Label";
 import Select from "@/components/form/Select";
 import { addTransaction, updateTransaction } from "@/app/admin/finance/actions";
 import { FinanceTransaction } from "@/lib/finance/types";
+import { toLocalDatetimeInputString } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface FinanceFormProps {
   divisions: { id: number; name: string }[];
@@ -36,20 +38,22 @@ export default function FinanceForm({ divisions, initialData, onSuccess, onClose
     try {
       if (initialData?.id) {
         await updateTransaction(initialData.id, data);
+        toast.success("Transaksi berhasil diperbarui");
       } else {
         await addTransaction(data);
+        toast.success("Transaksi berhasil ditambahkan");
       }
       onSuccess();
-    } catch (err: any) {
-      setError(err.message || "Terjadi kesalahan saat menyimpan transaksi");
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Terjadi kesalahan saat menyimpan transaksi";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
-  const defaultDate = initialData?.date
-    ? new Date(initialData.date).toISOString().slice(0, 16)
-    : new Date().toISOString().slice(0, 16); // format for datetime-local
+  const defaultDate = toLocalDatetimeInputString(initialData?.date);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">

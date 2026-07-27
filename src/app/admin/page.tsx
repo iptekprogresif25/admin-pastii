@@ -26,7 +26,7 @@ export default async function AdminDashboardPage() {
     { data: divisionsData },
     { data: allEvents },
   ] = await Promise.all([
-    supabase.from("profiles").select("*", { count: "exact", head: true }),
+    supabase.from("profiles").select("*", { count: "exact", head: true }).not("division_id", "is", null),
     supabase.from("divisions").select("*", { count: "exact", head: true }),
     supabase.from("events").select("*", { count: "exact", head: true }),
     supabase
@@ -35,7 +35,7 @@ export default async function AdminDashboardPage() {
       .order("created_at", { ascending: false })
       .limit(5),
     supabase.from("division_kas").select("type, amount"),
-    supabase.from("profiles").select("division_id"),
+    supabase.from("profiles").select("division_id").not("division_id", "is", null),
     supabase.from("divisions").select("id, name"),
     supabase.from("events").select("start_time"),
   ]);
@@ -44,8 +44,9 @@ export default async function AdminDashboardPage() {
   let totalMasuk = 0;
   let totalKeluar = 0;
   kasData?.forEach((kas) => {
-    if (kas.type === 0) totalMasuk += kas.amount;
-    else if (kas.type === 1) totalKeluar += kas.amount;
+    const amt = Number(kas.amount) || 0;
+    if (kas.type === 0) totalMasuk += amt;
+    else if (kas.type === 1) totalKeluar += amt;
   });
 
   // --- Process Member Distribution ---
@@ -71,8 +72,11 @@ export default async function AdminDashboardPage() {
   // --- Process Event Activity ---
   const eventsByMonth = Array(12).fill(0);
   allEvents?.forEach((event) => {
-    const monthIndex = new Date(event.start_time).getMonth();
-    eventsByMonth[monthIndex]++;
+    if (!event.start_time) return;
+    const eventDate = new Date(event.start_time);
+    if (!isNaN(eventDate.getTime())) {
+      eventsByMonth[eventDate.getMonth()]++;
+    }
   });
 
   const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];

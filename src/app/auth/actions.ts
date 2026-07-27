@@ -2,11 +2,15 @@
 
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
 
 export async function loginWithGoogle() {
   const supabase = await createClient();
-  const origin = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  
+  // Get the current host from headers in development
+  const headers = await import('next/headers').then(m => m.headers());
+  const host = headers.get('host') || 'localhost:3000';
+  const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
+  const origin = `${protocol}://${host}`;
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",

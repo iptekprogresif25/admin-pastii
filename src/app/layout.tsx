@@ -4,7 +4,7 @@ import './globals.css';
 import "flatpickr/dist/flatpickr.css";
 import { SidebarProvider } from '@/context/SidebarContext';
 import NextTopLoader from 'nextjs-toploader';
-import { ThemeProvider } from '@/context/ThemeContext';
+import { Providers } from '@/components/providers/Providers';
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -24,9 +24,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${outfit.className} dark:bg-gray-900`}>
         <NextTopLoader color="#10b981" showSpinner={false} />
-        <ThemeProvider>
+        <Providers>
           <SidebarProvider>{children}</SidebarProvider>
-        </ThemeProvider>
+        </Providers>
       </body>
     </html>
   );

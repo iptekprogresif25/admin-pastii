@@ -21,7 +21,8 @@ export const getProfilesForManagement = cache(async (
       division_id,
       is_active,
       division:divisions!profiles_division_id_fkey(name)
-    `, { count: "exact" });
+    `, { count: "exact" })
+    .not("division_id", "is", null);
 
   if (searchQuery) {
     queryBuilder = queryBuilder.ilike("full_name", `%${searchQuery}%`);

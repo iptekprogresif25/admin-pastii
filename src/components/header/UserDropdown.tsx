@@ -9,8 +9,19 @@ import { DropdownItem } from "../ui/dropdown/DropdownItem";
 
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
-  const [user, setUser] = useState<any>(null);
-  const [profile, setProfile] = useState<any>(null);
+  interface User {
+    id: string;
+    email?: string;
+  }
+
+  interface Profile {
+    id: string;
+    full_name: string;
+    avatar_url?: string;
+  }
+
+  const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const router = useRouter();
 
   useEffect(() => {

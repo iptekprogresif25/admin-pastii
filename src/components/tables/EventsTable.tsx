@@ -19,6 +19,7 @@ import { Dropdown } from '@/components/ui/dropdown/Dropdown';
 import { DropdownItem } from '@/components/ui/dropdown/DropdownItem';
 import { Modal } from '@/components/ui/modal';
 import Button from '@/components/ui/button/Button';
+import { toast } from 'sonner';
 import { softDeleteEvent, toggleEventStatus } from '@/app/admin/events/actions';
 
 interface Event {
@@ -68,9 +69,10 @@ export default function EventsTable({
     const result = await softDeleteEvent(deleteModalEvent.id);
     setIsDeleting(false);
     if (result.success) {
+      toast.success(`Kegiatan ${deleteModalEvent.title} berhasil dihapus`);
       setDeleteModalEvent(null);
     } else {
-      alert('Gagal menghapus kegiatan: ' + result.error);
+      toast.error('Gagal menghapus kegiatan: ' + result.error);
     }
   };
 
@@ -80,9 +82,10 @@ export default function EventsTable({
     const result = await toggleEventStatus(toggleModalEvent.id, toggleModalEvent.is_active);
     setIsToggling(false);
     if (result.success) {
+      toast.success(`Status kegiatan ${toggleModalEvent.title} berhasil diperbarui`);
       setToggleModalEvent(null);
     } else {
-      alert('Gagal mengubah status kegiatan: ' + result.error);
+      toast.error('Gagal mengubah status kegiatan: ' + result.error);
     }
   };
 

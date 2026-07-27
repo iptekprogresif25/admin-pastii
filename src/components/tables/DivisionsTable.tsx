@@ -16,6 +16,7 @@ import { Dropdown } from '@/components/ui/dropdown/Dropdown';
 import { DropdownItem } from '@/components/ui/dropdown/DropdownItem';
 import { Modal } from '@/components/ui/modal';
 import Button from '@/components/ui/button/Button';
+import { toast } from 'sonner';
 import { deleteDivision } from '@/app/admin/divisions/actions';
 
 interface Division {
@@ -59,9 +60,10 @@ export default function DivisionsTable({
     const result = await deleteDivision(deleteModalDivision.id);
     setIsDeleting(false);
     if (result.success) {
+      toast.success(`Divisi ${deleteModalDivision.name} berhasil dihapus`);
       setDeleteModalDivision(null);
     } else {
-      alert('Gagal menghapus divisi: ' + result.error);
+      toast.error('Gagal menghapus divisi: ' + result.error);
     }
   };
 

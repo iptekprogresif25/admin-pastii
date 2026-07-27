@@ -30,7 +30,7 @@ export default async function ProfilesPage(props: {
       
       <div className="space-y-6">
         <ProfilesTable 
-          profiles={(profiles as any) || []} 
+          profiles={profiles || []} 
           totalCount={totalCount || 0}
           currentPage={page}
           itemsPerPage={itemsPerPage}

@@ -11,11 +11,12 @@ import {
 } from '@/components/ui/table';
 import Badge from '@/components/ui/badge/Badge';
 import Pagination from '@/components/tables/Pagination';
-import { Clock, MapPin, Edit, Trash2, MoreVertical } from 'lucide-react';
+import { Clock, Edit, Trash2, MoreVertical } from 'lucide-react';
 import { Dropdown } from '@/components/ui/dropdown/Dropdown';
 import { DropdownItem } from '@/components/ui/dropdown/DropdownItem';
 import { Modal } from '@/components/ui/modal';
 import Button from '@/components/ui/button/Button';
+import { toast } from 'sonner';
 import { deleteAttendance } from '@/app/admin/attendance/actions';
 
 interface AttendanceRecord {
@@ -63,9 +64,10 @@ export default function AttendanceTable({
     const result = await deleteAttendance(deleteModalRecord.id);
     setIsDeleting(false);
     if (result.success) {
+      toast.success(`Data presensi ${deleteModalRecord.user_name} berhasil dihapus`);
       setDeleteModalRecord(null);
     } else {
-      alert('Gagal menghapus presensi: ' + result.error);
+      toast.error('Gagal menghapus presensi: ' + result.error);
     }
   };
 

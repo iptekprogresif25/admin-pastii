@@ -7,9 +7,24 @@ import Select from '@/components/form/Select';
 import Button from '@/components/ui/button/Button';
 import { updateProfile } from '../../actions';
 
+interface Division {
+  id: number;
+  name: string;
+}
+
+interface Profile {
+  id: string;
+  full_name: string;
+  role: 'ADMIN' | 'KOORDINATOR' | 'MEMBER';
+  division_id: number | null;
+  nim: string;
+  angkatan: string;
+  no_hp: string;
+}
+
 interface EditProfileFormProps {
-  profile: any;
-  divisions: any[];
+  profile: Profile;
+  divisions: Division[];
 }
 
 export default function EditProfileForm({ profile, divisions }: EditProfileFormProps) {
@@ -43,8 +58,9 @@ export default function EditProfileForm({ profile, divisions }: EditProfileFormP
     const res = await updateProfile(profile.id, payload);
     
     if (res.success) {
+      // Server Action automatically calls revalidatePath()
+      // Just redirect to profiles page
       router.push('/admin/profiles');
-      router.refresh();
     } else {
       setError(res.error || 'Terjadi kesalahan saat menyimpan data.');
       setIsSubmitting(false);
@@ -117,7 +133,7 @@ export default function EditProfileForm({ profile, divisions }: EditProfileFormP
             <Select
               options={roleOptions}
               defaultValue={formData.role}
-              onChange={(val) => setFormData({ ...formData, role: val })}
+              onChange={(val) => setFormData({ ...formData, role: val as 'ADMIN' | 'KOORDINATOR' | 'MEMBER' })}
             />
           </div>
           <div>

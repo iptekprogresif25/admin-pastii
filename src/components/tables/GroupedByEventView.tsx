@@ -10,6 +10,7 @@ import { Dropdown } from '@/components/ui/dropdown/Dropdown';
 import { DropdownItem } from '@/components/ui/dropdown/DropdownItem';
 import { Modal } from '@/components/ui/modal';
 import Button from '@/components/ui/button/Button';
+import { toast } from 'sonner';
 import { deleteAttendance } from '@/app/admin/attendance/actions';
 import dynamic from 'next/dynamic';
 import { UserCircleIcon } from '@/icons';
@@ -30,7 +31,7 @@ export default function GroupedByEventView({ groupedData, totalCount, currentPag
   const searchParams = useSearchParams();
   
   const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
-  const [deleteModalRecord, setDeleteModalRecord] = useState<any | null>(null);
+  const [deleteModalRecord, setDeleteModalRecord] = useState<AttendeeRow | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [activeEventId, setActiveEventId] = useState<number | null>(null);
 
@@ -43,12 +44,16 @@ export default function GroupedByEventView({ groupedData, totalCount, currentPag
   const toggleDropdown = (id: number) => openDropdownId === id ? setOpenDropdownId(null) : setOpenDropdownId(id);
 
   const handleDelete = async () => {
-    if (!deleteModalRecord) return;
+    if (!deleteModalRecord || !deleteModalRecord.id) return;
     setIsDeleting(true);
     const result = await deleteAttendance(deleteModalRecord.id);
     setIsDeleting(false);
-    if (result.success) setDeleteModalRecord(null);
-    else alert('Gagal menghapus presensi: ' + result.error);
+    if (result.success) {
+      toast.success(`Data presensi ${deleteModalRecord.user_name} berhasil dihapus`);
+      setDeleteModalRecord(null);
+    } else {
+      toast.error('Gagal menghapus presensi: ' + result.error);
+    }
   };
 
   const handlePageChange = (page: number) => {

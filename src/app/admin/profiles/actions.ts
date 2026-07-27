@@ -1,8 +1,19 @@
 'use server';
 
-import { createAdminClient } from '@/utils/supabase/admin';
-import { revalidatePath, updateTag } from 'next/cache';
-import { CACHE_TAGS } from '@/lib/constants';
+import { createAdminClient } from "@/utils/supabase/admin";
+import { revalidatePath } from "next/cache";
+
+interface Profile {
+  id: string;
+  full_name: string;
+  role: 'ADMIN' | 'KOORDINATOR' | 'MEMBER';
+  division_id: number | null;
+  nim: string;
+  email: string;
+  phone_number?: string;
+  avatar_url?: string;
+  is_active: boolean;
+}
 
 export async function softDeleteProfile(id: string) {
   const supabaseAdmin = createAdminClient();
@@ -18,7 +29,6 @@ export async function softDeleteProfile(id: string) {
   }
 
   revalidatePath('/admin/profiles');
-  updateTag(CACHE_TAGS.PROFILES);
   return { success: true };
 }
 
@@ -37,11 +47,10 @@ export async function toggleProfileStatus(id: string, currentStatus: boolean) {
   }
 
   revalidatePath('/admin/profiles');
-  updateTag(CACHE_TAGS.PROFILES);
   return { success: true };
 }
 
-export async function updateProfile(id: string, data: any) {
+export async function updateProfile(id: string, data: Partial<Profile>): Promise<{ success: boolean; error?: string }> {
   const supabaseAdmin = createAdminClient();
   
   const { error } = await supabaseAdmin
@@ -56,6 +65,5 @@ export async function updateProfile(id: string, data: any) {
 
   revalidatePath('/admin/profiles');
   revalidatePath(`/admin/profiles/${id}/edit`);
-  updateTag(CACHE_TAGS.PROFILES);
   return { success: true };
 }

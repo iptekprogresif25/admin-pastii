@@ -50,7 +50,8 @@ export const getCachedActiveProfiles = unstable_cache(
     const { data } = await getAdmin()
       .from('profiles')
       .select('id, full_name, nim, division_id, avatar_url')
-      .eq('is_active', true);
+      .eq('is_active', true)
+      .not('division_id', 'is', null);
     return (data ?? []) as DbProfile[];
   },
   [CACHE_TAGS.PROFILES],
@@ -105,10 +106,11 @@ export const getPaginatedProfiles = cache(async (
 ): Promise<{ profiles: DbProfile[]; total: number }> => {
   const db = getAdmin();
   const [countResult, dataResult] = await Promise.all([
-    db.from('profiles').select('id', { count: 'exact', head: true }),
+    db.from('profiles').select('id', { count: 'exact', head: true }).not('division_id', 'is', null),
     db
       .from('profiles')
       .select('id, full_name, nim, division_id, avatar_url')
+      .not('division_id', 'is', null)
       .order('full_name', { ascending: true })
       .range(from, to),
   ]);
