@@ -6,65 +6,84 @@ export async function middleware(request: NextRequest) {
     request,
   });
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            request.cookies.set(name, value)
-          );
-          supabaseResponse = NextResponse.next({
-            request,
-          });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          );
-        },
-      },
-    }
-  );
-
-  // refreshing the auth token
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   const isAuthRoute = request.nextUrl.pathname.startsWith("/auth");
   const isAdminRoute = request.nextUrl.pathname.startsWith("/admin");
 
-  let isAuthorized = false;
-  if (user && isAdminRoute) {
-    // Cek apakah profil ada, role ADMIN, dan is_active true
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role, is_active")
-      .eq("id", user.id)
-      .single();
+  // Safely guard against missing env variables in Vercel
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.error("Middleware Warning: NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY is missing!");
+    if (isAdminRoute) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/auth/login";
+      return NextResponse.redirect(url);
+    }
+    return supabaseResponse;
+  }
 
-    if (profile && profile.role === "ADMIN" && profile.is_active === true) {
+  try {
+    const supabase = createServerClient(
+      supabaseUrl,
+      supabaseAnonKey,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll();
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value }) =>
+              request.cookies.set(name, value)
+            );
+            supabaseResponse = NextResponse.next({
+              request,
+            });
+            cookiesToSet.forEach(({ name, value, options }) =>
+              supabaseResponse.cookies.set(name, value, options)
+            );
+          },
+        },
+      }
+    );
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    let isAuthorized = false;
+    if (user && isAdminRoute) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role, is_active")
+        .eq("id", user.id)
+        .single();
+
+      if (profile && profile.role === "ADMIN" && profile.is_active === true) {
+        isAuthorized = true;
+      }
+    } else if (user) {
       isAuthorized = true;
     }
-  } else if (user) {
-    isAuthorized = true; // For other routes, allow if logged in (or we can restrict completely)
-  }
 
-  // Jika belum login atau tidak punya akses (bukan admin) dan mencoba akses rute admin
-  if ((!user || !isAuthorized) && isAdminRoute) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/auth/login";
-    return NextResponse.redirect(url);
-  }
+    if ((!user || !isAuthorized) && isAdminRoute) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/auth/login";
+      return NextResponse.redirect(url);
+    }
 
-  // Jika sudah login & authorized dan mencoba akses rute auth
-  if (user && isAuthorized && isAuthRoute) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/admin";
-    return NextResponse.redirect(url);
+    if (user && isAuthorized && isAuthRoute) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/admin";
+      return NextResponse.redirect(url);
+    }
+  } catch (err) {
+    console.error("Middleware runtime error:", err);
+    if (isAdminRoute) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/auth/login";
+      return NextResponse.redirect(url);
+    }
   }
 
   return supabaseResponse;
@@ -72,13 +91,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * Feel free to modify this pattern to include more paths.
-     */
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
