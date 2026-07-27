@@ -22,15 +22,31 @@ import Button from '@/components/ui/button/Button';
 import { toast } from 'sonner';
 import { softDeleteEvent, toggleEventStatus } from '@/app/admin/events/actions';
 
+interface EventLocation {
+  name?: string;
+}
+
 interface Event {
   id: number;
   title: string;
   start_time: string;
   end_time: string | null;
   type: string | null;
-  location_id: string | null;
+  location_id: string | number | null;
+  location?: EventLocation | EventLocation[] | null;
   is_active: boolean;
 }
+
+const getLocationName = (event: Event): string => {
+  if (event.location) {
+    if (Array.isArray(event.location)) {
+      if (event.location[0]?.name) return event.location[0].name;
+    } else if (event.location.name) {
+      return event.location.name;
+    }
+  }
+  return event.location_id ? `Lokasi #${event.location_id}` : 'Lokasi tidak ditentukan';
+};
 
 interface EventsTableProps {
   events: Event[];
@@ -196,11 +212,12 @@ export default function EventsTable({
                   </TableRow>
                 ) : (
                   events.map((event) => {
+                    const locName = getLocationName(event);
                     const eventDetails: EventDetails = {
                       title: event.title,
                       date: formatDate(event.start_time),
                       time: `${formatTime(event.start_time)} - ${event.end_time ? formatTime(event.end_time) : 'Selesai'}`,
-                      location: event.location_id ? `Lokasi ID: ${event.location_id}` : 'Lokasi tidak ditentukan',
+                      location: locName,
                     };
 
                     const isRapat = event.type?.toLowerCase() === 'rapat';
@@ -210,6 +227,9 @@ export default function EventsTable({
                         <TableCell className="px-5 py-4 sm:px-6 text-start">
                           <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
                             {event.title}
+                          </span>
+                          <span className="block text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                            📍 {locName}
                           </span>
                         </TableCell>
                         <TableCell className="px-4 py-3 text-start text-theme-sm dark:text-gray-400">

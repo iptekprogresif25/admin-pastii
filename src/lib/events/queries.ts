@@ -14,7 +14,7 @@ export const getEventsForManagement = cache(async (
   const db = getAdmin();
   let queryBuilder = db
     .from("events")
-    .select("id, title, start_time, end_time, type, location_id, is_active", { count: "exact" });
+    .select("id, title, start_time, end_time, type, location_id, is_active, location:locations(name)", { count: "exact" });
 
   if (searchQuery) {
     queryBuilder = queryBuilder.or(`title.ilike.%${searchQuery}%,type.ilike.%${searchQuery}%`);
